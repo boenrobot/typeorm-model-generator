@@ -318,7 +318,8 @@ export class MysqlDriver extends AbstractDriver {
                 ON CU.CONSTRAINT_NAME=RC.CONSTRAINT_NAME AND CU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA
           WHERE
             TABLE_SCHEMA IN (${this.escapeCommaSeparatedList(dbNames)})
-            AND CU.REFERENCED_TABLE_NAME IS NOT NULL;
+            AND CU.REFERENCED_TABLE_NAME IS NOT NULL
+            ORDER BY object_id, FK_PartNo;
             `);
         const relationsTemp: IRelationTempInfo[] = [] as IRelationTempInfo[];
         response.forEach(resp => {

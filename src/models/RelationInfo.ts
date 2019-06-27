@@ -1,6 +1,7 @@
 export class RelationInfo {
     public isOwner: boolean;
     public relationType: "OneToOne" | "OneToMany" | "ManyToOne" | "ManyToMany";
+    public columnIndex: number;
     public relatedTable: string;
     public relatedColumn: string;
     public ownerTable: string;

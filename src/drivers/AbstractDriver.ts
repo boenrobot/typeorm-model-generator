@@ -277,6 +277,7 @@ export abstract class AbstractDriver {
                 isOneToMany = !index;
 
                 const ownerRelation = new RelationInfo();
+                ownerRelation.columnIndex = relationColumnIndex;
                 ownerRelation.actionOnDelete = relationTmp.actionOnDelete;
                 ownerRelation.actionOnUpdate = relationTmp.actionOnUpdate;
                 ownerRelation.isOwner = true;
@@ -315,6 +316,7 @@ export abstract class AbstractDriver {
                     col.tsName = columnName;
                     const referencedRelation = new RelationInfo();
                     col.relations.push(referencedRelation);
+                    referencedRelation.columnIndex = relationColumnIndex;
                     referencedRelation.actionOnDelete =
                         relationTmp.actionOnDelete;
                     referencedRelation.actionOnUpdate =
@@ -331,6 +333,7 @@ export abstract class AbstractDriver {
                     col.tsName = columnName;
                     const referencedRelation = new RelationInfo();
                     col.relations.push(referencedRelation);
+                    referencedRelation.columnIndex = relationColumnIndex;
                     referencedRelation.actionOnDelete =
                         relationTmp.actionOnDelete;
                     referencedRelation.actionOnUpdate =
