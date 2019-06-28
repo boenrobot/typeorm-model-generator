@@ -380,20 +380,6 @@ function applyNamingStrategy(
                     model.forEach(entity2 => {
                         entity2.Columns.forEach(column2 => {
                             column2.relations.forEach(relation2 => {
-                                if (
-                                    relation2.relatedTable ===
-                                        entity.tsEntityName &&
-                                    relation2.ownerColumn === column.tsName
-                                ) {
-                                    relation2.ownerColumn = newName;
-                                }
-                                if (
-                                    relation2.relatedTable ===
-                                        entity.tsEntityName &&
-                                    relation2.relatedColumn === column.tsName
-                                ) {
-                                    relation2.relatedColumn = newName;
-                                }
                                 if (relation.isOwner) {
                                     entity.Indexes.forEach(ind => {
                                         ind.columns
@@ -424,26 +410,6 @@ function applyNamingStrategy(
                     index.columns
                         .filter(column2 => column2.name === column.tsName)
                         .forEach(column2 => (column2.name = newName));
-                });
-                model.forEach(entity2 => {
-                    entity2.Columns.forEach(column2 => {
-                        column2.relations
-                            .filter(
-                                relation =>
-                                    relation.relatedTable ===
-                                        entity.tsEntityName &&
-                                    relation.relatedColumn === column.tsName
-                            )
-                            .map(v => (v.relatedColumn = newName));
-                        column2.relations
-                            .filter(
-                                relation =>
-                                    relation.relatedTable ===
-                                        entity.tsEntityName &&
-                                    relation.ownerColumn === column.tsName
-                            )
-                            .map(v => (v.ownerColumn = newName));
-                    });
                 });
 
                 column.tsName = newName;
