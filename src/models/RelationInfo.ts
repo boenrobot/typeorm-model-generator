@@ -5,6 +5,8 @@ export class RelationInfo {
     public relatedColumn: string;
     public ownerTable: string;
     public ownerColumn: string;
+    public sqlOwnerColumns: string[];
+    public sqlRelatedColumns: string[];
     public actionOnDelete:
         | "RESTRICT"
         | "CASCADE"

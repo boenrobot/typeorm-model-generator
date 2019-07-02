@@ -12,6 +12,7 @@ import { PostgresDriver } from "./drivers/PostgresDriver";
 import { SqliteDriver } from "./drivers/SqliteDriver";
 import { IConnectionOptions } from "./IConnectionOptions";
 import { IGenerationOptions } from "./IGenerationOptions";
+import { ColumnInfo } from "./models/ColumnInfo";
 import { EntityInfo } from "./models/EntityInfo";
 import { NamingStrategy } from "./NamingStrategy";
 import * as TomgUtils from "./Utils";
@@ -370,6 +371,7 @@ function applyNamingStrategy(
 
     function changeRelationNames(model: EntityInfo[]) {
         model.forEach(entity => {
+            const newColumns: ColumnInfo[] = [];
             entity.Columns.forEach(column => {
                 column.relations.forEach(relation => {
                     const newName = namingStrategy.relationName(
@@ -410,7 +412,20 @@ function applyNamingStrategy(
                         });
                     });
                     column.tsName = newName;
+                    const newColumn = new ColumnInfo();
+                    newColumn.tsName = newName;
+                    newColumn.relations.push(relation);
+                    newColumns.push(newColumn);
                 });
+            });
+            newColumns.forEach((newColumn: ColumnInfo) => {
+                entity.Columns.splice(
+                    entity.Columns.findIndex(
+                        (col: ColumnInfo) => col.tsName === newColumn.tsName
+                    ),
+                    1,
+                    newColumn
+                );
             });
         });
         return dbModel;
