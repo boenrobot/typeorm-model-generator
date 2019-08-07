@@ -5,6 +5,7 @@
   "bin": "bin/typeorm-model-generator",
   "scripts": {
     "setup": "npm install",
+    "build": "tsc",
     "start": "ts-node ./src/index.ts",
     "test": "nyc --reporter=lcov ts-node ./node_modules/mocha/bin/_mocha test/**/*.test.ts  -- -R spec --bail",
     "clean": "rimraf coverage output",
