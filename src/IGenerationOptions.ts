@@ -21,4 +21,5 @@ export default class IGenerationOptions {
     public customNamingStrategyPath: string = "";
 
     public relationIds: boolean = false;
+    public detached: boolean = false;
 }

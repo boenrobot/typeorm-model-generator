@@ -17,6 +17,7 @@ export default class EntityInfo {
     public Schema: string;
 
     public GenerateConstructor: boolean;
+    public detached: boolean;
 
     public IsActiveRecord: boolean;
 

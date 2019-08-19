@@ -143,6 +143,7 @@ function addImportsAndGenerationOptions(
         });
         element.GenerateConstructor = generationOptions.generateConstructor;
         element.IsActiveRecord = generationOptions.activeRecord;
+        element.detached = generationOptions.detached;
         element.Imports.filter((elem, index, self) => {
             return index === self.indexOf(elem);
         });
