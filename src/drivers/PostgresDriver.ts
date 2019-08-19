@@ -526,6 +526,7 @@ WHERE "n"."nspname" = table_schema AND "t"."typname"=udt_name
                 AND att2.attrelid = con.conrelid
                 AND att2.attnum = con.parent
                 AND rc.constraint_name= con.conname AND constraint_catalog=current_database() AND rc.constraint_schema=nspname
+              ORDER BY object_id, fk_partno;
                 `)).rows;
         const relationsTemp: RelationTempInfo[] = [] as RelationTempInfo[];
         response.forEach(resp => {
