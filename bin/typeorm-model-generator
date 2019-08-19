@@ -3,4 +3,4 @@
 
 
 
-require('../dist/src/index');
+require('../src/index');
