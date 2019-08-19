@@ -18,4 +18,6 @@ export default class ColumnInfo {
         | "any";
 
     public relations: RelationInfo[] = [];
+
+    public hasLazyRelations: boolean = false;
 }

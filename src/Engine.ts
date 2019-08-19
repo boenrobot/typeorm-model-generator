@@ -139,7 +139,9 @@ function addImportsAndGenerationOptions(
                 if (element.tsEntityName !== relation.relatedTable) {
                     element.Imports.push(relation.relatedTable);
                 }
+                relation.isLazy = generationOptions.lazy;
             });
+            column.hasLazyRelations = generationOptions.lazy;
         });
         element.GenerateConstructor = generationOptions.generateConstructor;
         element.IsActiveRecord = generationOptions.activeRecord;
@@ -284,8 +286,22 @@ function createHandlebarsHelpers(generationOptions: IGenerationOptions) {
     Handlebars.registerHelper("tolowerCaseFirst", str =>
         changeCase.lowerCaseFirst(str)
     );
-    Handlebars.registerHelper("toLazy", str => {
-        if (generationOptions.lazy) {
+    Handlebars.registerHelper("toLazy", (str, ctx) => {
+        if (
+            typeof ctx.hasLazyRelations !== "undefined"
+                ? ctx.hasLazyRelations
+                : generationOptions.lazy
+        ) {
+            return `Promise<${str}>`;
+        }
+        return str;
+    });
+    Handlebars.registerHelper("toLazy", (str, ctx) => {
+        if (
+            typeof ctx.hasLazyRelations !== "undefined"
+                ? ctx.hasLazyRelations
+                : generationOptions.lazy
+        ) {
             return `Promise<${str}>`;
         }
         return str;

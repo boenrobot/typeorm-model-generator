@@ -101,6 +101,7 @@ describe("MssqlDriver", function() {
             },
             tsName: "name",
             tsType: "number",
+            hasLazyRelations: false,
             relations: [] as RelationInfo[]
         });
         const result = await driver.GetCoulmnsFromEntity(

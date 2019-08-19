@@ -28,6 +28,8 @@ export default class RelationInfo {
 
     public relationIdField: boolean = false;
 
+    public isLazy: boolean;
+
     public get isOneToMany(): boolean {
         return this.relationType === "OneToMany";
     }
