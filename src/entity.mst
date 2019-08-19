@@ -36,6 +36,7 @@ import {BaseEntity,Column,Entity,Index,JoinColumn,JoinTable,ManyToMany,ManyToOne
     @RelationId(({{toPropertyName ../../tsEntityName}}: {{toEntityName ../../tsEntityName}}) => {{toPropertyName ../../tsEntityName}}.{{toPropertyName ../tsName}})
     {{printPropertyVisibility}}{{toPropertyName ../tsName}}Id?: {{#if isOneToOne}}{{toLazy ../tsType}}{{else}}{{toLazy (concat  ../tsType "[]")}}{{/if}};{{/if}}{{/relations}}
     {{/Columns}}
+
     {{#if GenerateConstructor}}
     {{printPropertyVisibility}}constructor(init?: Partial<{{toEntityName tsEntityName}}>) {
         {{#IsActiveRecord}}super();
