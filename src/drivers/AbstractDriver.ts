@@ -248,7 +248,9 @@ export default abstract class AbstractDriver {
             );
             if (!ownerEntity) {
                 TomgUtils.LogError(
-                    `Relation between tables ${relationTmp.ownerTable} and ${relationTmp.referencedTable} didn't found entity model ${relationTmp.ownerTable}.`
+                    `Relation between tables ${relationTmp.ownerTable} and ${
+                        relationTmp.referencedTable
+                    } didn't found entity model ${relationTmp.ownerTable}.`
                 );
                 return;
             }
@@ -258,7 +260,9 @@ export default abstract class AbstractDriver {
             );
             if (!referencedEntity) {
                 TomgUtils.LogError(
-                    `Relation between tables ${relationTmp.ownerTable} and ${relationTmp.referencedTable} didn't found entity model ${relationTmp.referencedTable}.`
+                    `Relation between tables ${relationTmp.ownerTable} and ${
+                        relationTmp.referencedTable
+                    } didn't found entity model ${relationTmp.referencedTable}.`
                 );
                 return;
             }
@@ -274,7 +278,13 @@ export default abstract class AbstractDriver {
                 );
                 if (!ownerColumn) {
                     TomgUtils.LogError(
-                        `Relation between tables ${relationTmp.ownerTable} and ${relationTmp.referencedTable} didn't found entity column ${relationTmp.ownerTable}.${ownerColumn}.`
+                        `Relation between tables ${
+                            relationTmp.ownerTable
+                        } and ${
+                            relationTmp.referencedTable
+                        } didn't found entity column ${
+                            relationTmp.ownerTable
+                        }.${ownerColumn}.`
                     );
                     return;
                 }
@@ -285,7 +295,13 @@ export default abstract class AbstractDriver {
                 );
                 if (!relatedColumn) {
                     TomgUtils.LogError(
-                        `Relation between tables ${relationTmp.ownerTable} and ${relationTmp.referencedTable} didn't found entity column ${relationTmp.referencedTable}.${relatedColumn}.`
+                        `Relation between tables ${
+                            relationTmp.ownerTable
+                        } and ${
+                            relationTmp.referencedTable
+                        } didn't found entity column ${
+                            relationTmp.referencedTable
+                        }.${relatedColumn}.`
                     );
                     return;
                 }
