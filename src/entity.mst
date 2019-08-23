@@ -37,6 +37,7 @@ import {BaseEntity,Column,Entity,Index,JoinColumn,JoinTable,ManyToMany,ManyToOne
     {{printPropertyVisibility}}{{toPropertyName ../tsName}}Id{{strictMode}}: {{#if isOneToOne}}{{toLazy ../tsType}}{{else}}{{toLazy (concat  ../tsType "[]")}}{{/if}};{{/if}}{{/relations}}
     {{/Columns}}
     {{#if GenerateConstructor}}
+
     {{printPropertyVisibility}}constructor(init?: Partial<{{toEntityName tsEntityName}}>) {
         {{#IsActiveRecord}}super();
         {{/IsActiveRecord}}Object.assign(this, init);
