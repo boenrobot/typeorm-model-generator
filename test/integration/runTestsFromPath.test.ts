@@ -1,6 +1,11 @@
 import "reflect-metadata";
-import { expect } from "chai";
+import { describe, it } from "mocha";
+import { expect, use } from "chai";
 import * as ts from "typescript";
+import * as path from "path";
+import * as fs from "fs-extra";
+import yn from "yn";
+import dotenv from "dotenv";
 import EntityFileToJson from "../utils/EntityFileToJson";
 import {
     createDriver,
@@ -12,15 +17,11 @@ import * as GTU from "../utils/GeneralTestUtils";
 import EntityInfo from "../../src/models/EntityInfo";
 import IConnectionOptions from "../../src/IConnectionOptions";
 
-import fs = require("fs-extra");
-import path = require("path");
 import chaiSubset = require("chai-subset");
-import chai = require("chai");
-import yn = require("yn");
 
-require("dotenv").config();
+dotenv.config();
 
-chai.use(chaiSubset);
+use(chaiSubset);
 
 it("Column default values", async function() {
     const testPartialPath = "test/integration/defaultValues";

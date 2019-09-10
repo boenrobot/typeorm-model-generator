@@ -6,6 +6,7 @@ import EntityInfo from "../../src/models/EntityInfo";
 import ColumnInfo from "../../src/models/ColumnInfo";
 import IndexInfo from "../../src/models/IndexInfo";
 import RelationInfo from "../../src/models/RelationInfo";
+import { describe, beforeEach, it } from 'mocha';
 
 interface FakeResponse extends MSSQL.IResult<any> {
     recordsets: MSSQL.IRecordSet<any>[];
