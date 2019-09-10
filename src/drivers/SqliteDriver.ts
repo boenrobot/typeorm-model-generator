@@ -163,7 +163,11 @@ export default class SqliteDriver extends AbstractDriver {
                             break;
                         default:
                             TomgUtils.LogError(
-                                `Unknown column type: ${colInfo.options.type}  table name: ${ent.tsEntityName} column name: ${resp.name}`
+                                `Unknown column type: ${
+                                    colInfo.options.type
+                                }  table name: ${
+                                    ent.tsEntityName
+                                } column name: ${resp.name}`
                             );
                             break;
                     }
@@ -391,8 +395,8 @@ export default class SqliteDriver extends AbstractDriver {
             return null;
         }
         if (defVal.startsWith(`'`)) {
-            return `() => "${defVal}"`;
+            return `(): string => "${defVal}"`;
         }
-        return `() => "${defVal}"`;
+        return `(): string => "${defVal}"`;
     }
 }

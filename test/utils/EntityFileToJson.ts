@@ -89,7 +89,7 @@ export default class EntityFileToJson {
                         badJSON[badJSON.length - 1];
                 }
                 badJSON = badJSON.replace(
-                    /default: \(\) => (.*)/,
+                    /default: \(\): string => (.*)/,
                     `default: $1`
                 );
                 col.columnOptions = JSON.parse(
