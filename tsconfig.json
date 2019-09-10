@@ -19,8 +19,10 @@
         ],
         "resolveJsonModule": true,
     },
+    "exclude": [
+      "**/node_modules"
+    ],
     "include": [
-        "src",
-        "test"
+      "src"
     ]
 }
