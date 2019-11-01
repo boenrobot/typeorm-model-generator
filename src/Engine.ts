@@ -56,6 +56,7 @@ export async function createModelFromDatabase(
         generationOptions,
         driver.defaultValues
     );
+    console.log(require("util").inspect(dbModel, false, null, true));
     modelGenerationPhase(connectionOptions, generationOptions, dbModel);
 }
 export async function dataCollectionPhase(
@@ -162,7 +163,7 @@ function setRelationId(
         model.forEach(ent => {
             ent.Columns.forEach(col => {
                 col.relations.forEach(rel => {
-                    rel.relationIdField = rel.isOwner;
+                    rel.relationIdField = rel.isOwner && !rel.isOneToOne;
                 });
             });
         });
