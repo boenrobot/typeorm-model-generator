@@ -7,7 +7,7 @@ export class Post {
     id: number;
 
     @Column("datetime",{
-        default: () => "getdate()",
+        default: (): string => "getdate()",
         })
     createdAt:Date;
 

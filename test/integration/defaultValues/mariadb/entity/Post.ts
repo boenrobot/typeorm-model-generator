@@ -14,7 +14,7 @@ export class Post {
 
     @Column("varchar",{
         length: 30,
-        default: () => "'defVal'",
+        default: (): string => "'defVal'",
         })
     text:string;
 

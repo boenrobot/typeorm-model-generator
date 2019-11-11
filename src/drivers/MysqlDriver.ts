@@ -501,8 +501,8 @@ export default class MysqlDriver extends AbstractDriver {
             defaultValue === "CURRENT_TIMESTAMP" ||
             defaultValue.startsWith(`'`)
         ) {
-            return `() => "${defaultValue}"`;
+            return `(): string => "${defaultValue}"`;
         }
-        return `() => "'${defaultValue}'"`;
+        return `(): string => "'${defaultValue}'"`;
     }
 }
