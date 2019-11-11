@@ -3,6 +3,7 @@ import * as Prettier from "prettier";
 import * as changeCase from "change-case";
 import * as fs from "fs";
 import * as path from "path";
+import { RelationOptions } from "typeorm";
 import IConnectionOptions from "./IConnectionOptions";
 import IGenerationOptions from "./IGenerationOptions";
 import { Entity, Relation } from "./models";
@@ -197,12 +198,16 @@ function createHandlebarsHelpers(generationOptions: IGenerationOptions): void {
     });
     Handlebars.registerHelper(
         "toRelation",
-        (entityType: string, relationType: Relation["relationType"]) => {
+        (
+            entityType: string,
+            relationType: Relation["relationType"],
+            relationOptions: RelationOptions
+        ) => {
             let retVal = entityType;
             if (relationType === "ManyToMany" || relationType === "OneToMany") {
                 retVal = `${retVal}[]`;
             }
-            if (generationOptions.lazy) {
+            if (relationOptions.lazy) {
                 retVal = `Promise<${retVal}>`;
             }
             return retVal;
