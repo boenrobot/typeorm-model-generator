@@ -656,8 +656,8 @@ export default class PostgresDriver extends AbstractDriver {
         }
         defaultValue = defaultValue.replace(/'::[\w ]*/, "'");
         if (defaultValue.startsWith(`'`)) {
-            return `() => "${defaultValue}"`;
+            return `(): string => "${defaultValue}"`;
         }
-        return `() => "${defaultValue}"`;
+        return `(): string => "${defaultValue}"`;
     }
 }
