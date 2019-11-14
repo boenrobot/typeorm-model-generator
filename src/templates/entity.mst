@@ -13,14 +13,14 @@ import { {{toEntityName .}} } from './{{toFileName .}}'
 { name: "{{name}}", referencedColumnName: "{{toPropertyName referencedColumnName}}" },
 {{/inline}}
 {{#*inline "Relation"}}
-@{{relationType}}(()=>{{toEntityName relatedTable}},{{toEntityName relatedTable}}=>{{toEntityName relatedTable}}.{{toPropertyName relatedField}}{{#if relationOptions}},{ {{json relationOptions}} }{{/if}})
+@{{relationType}}(() =>{{toEntityName relatedTable}},{{#if relatedFieldOptions.lazy}}async {{/if}}({{toPropertyName relatedTable}}: {{toEntityName relatedTable}}) =>{{toPropertyName relatedTable}}.{{toPropertyName relatedField}}{{#if relationOptions}},{ {{json relationOptions}} }{{/if}})
 {{#if joinColumnOptions}}@JoinColumn([{{#joinColumnOptions}}{{> JoinColumnOptions}}{{/joinColumnOptions}}]){{/if}}
 {{#joinTableOptions}}@JoinTable({ name:"{{name}}", joinColumns:[{{#joinColumns}}{{> JoinColumnOptions}}{{/joinColumns}}],inverseJoinColumns:[{{#inverseJoinColumns}}{{> JoinColumnOptions}}{{/inverseJoinColumns}}],{{#database}}database:"{{.}}",{{/database}}{{#schema}}schema:"{{.}}"{{/schema}} }){{/joinTableOptions}}
 {{printPropertyVisibility}}{{toPropertyName fieldName}}{{strictMode}}:{{toRelation (toEntityName relatedTable) relationType}};
 
 {{/inline}}
 {{#*inline "RelationId"}}
-@RelationId(({{toPropertyName entityName}}:{{toEntityName entityName}})=>{{toPropertyName entityName}}.{{toPropertyName relationField}})
+  @RelationId({{#if relationOptions.lazy}}async {{/if}}({{toPropertyName entityName}}:{{toEntityName entityName}})=>{{toPropertyName entityName}}.{{toPropertyName relationField}})
 {{printPropertyVisibility}}{{toPropertyName fieldName}}{{strictMode}}:{{fieldType}};
 
 {{/inline}}
@@ -36,7 +36,7 @@ import { {{toEntityName .}} } from './{{toFileName .}}'
 export class {{toEntityName tscName}}{{#activeRecord}} extends BaseEntity{{/activeRecord}} {
 
 {{#columns}}{{> Column}}{{/columns~}}
-{{#relations}}{{> Relation}}{{/relations~}}
+{{#relations}}{{> Relation entityName=../tscName}}{{/relations~}}
 {{#relationIds}}{{> RelationId entityName=../tscName}}{{/relationIds~}}
 {{#if generateConstructor}}{{>Constructor entityName=tscName}}{{/if~}}
 }
