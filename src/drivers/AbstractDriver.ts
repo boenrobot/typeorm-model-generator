@@ -396,11 +396,10 @@ export default abstract class AbstractDriver {
                     fieldType: isOneToMany
                         ? `${
                               relationIdType.includes(" ")
-                                  ? "(" + relationIdType + ")"
+                                  ? `(${relationIdType})`
                                   : relationIdType
                           }[]`
                         : relationIdType,
-                    relationOptions: ownerRelation.relationOptions,
                     relationField: ownerRelation.fieldName
                 });
                 // TODO: RelationId on ManyToMany
