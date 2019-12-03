@@ -149,12 +149,16 @@ function createHandlebarsHelpers(generationOptions: IGenerationOptions): void {
     });
     Handlebars.registerHelper(
         "toRelation",
-        (entityType: string, relationType: Relation["relationType"]) => {
+        (
+            entityType: string,
+            relationType: Relation["relationType"],
+            relationOptions: Relation["relationOptions"]
+        ) => {
             let retVal = entityType;
             if (relationType === "ManyToMany" || relationType === "OneToMany") {
                 retVal = `${retVal}[]`;
             }
-            if (generationOptions.lazy) {
+            if (relationOptions && relationOptions.lazy) {
                 retVal = `Promise<${retVal}>`;
             }
             return retVal;
