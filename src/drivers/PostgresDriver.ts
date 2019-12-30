@@ -24,13 +24,21 @@ export default class PostgresDriver extends AbstractDriver {
 
     private Connection: PG.Client;
 
-    public GetAllTablesQuery = async (schema: string) => {
+    public GetAllTablesQuery = async (
+        schema: string,
+        dbNames: string,
+        tableNames: string[]
+    ) => {
+        const tableCondition =
+            tableNames.length > 0
+                ? ` AND NOT table_name IN ('${tableNames.join("','")}')`
+                : "";
         const response: {
             TABLE_SCHEMA: string;
             TABLE_NAME: string;
             DB_NAME: string;
         }[] = (await this.Connection.query(
-            `SELECT table_schema as "TABLE_SCHEMA",table_name as "TABLE_NAME", table_catalog as "DB_NAME" FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE' AND table_schema in (${schema}) `
+            `SELECT table_schema as "TABLE_SCHEMA",table_name as "TABLE_NAME", table_catalog as "DB_NAME" FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE' AND table_schema in (${schema}) ${tableCondition}`
         )).rows;
         return response;
     };
@@ -99,21 +107,22 @@ export default class PostgresDriver extends AbstractDriver {
                         resp.udt_name,
                         resp.enumvalues
                     );
-                    if (!columnTypes.sqlType || !columnTypes.tsType) {
+                    if (columnTypes.tsType === "NonNullable<unknown>") {
                         if (
                             resp.data_type === "USER-DEFINED" ||
                             resp.data_type === "ARRAY"
                         ) {
                             TomgUtils.LogError(
-                                `Unknown ${resp.data_type} column type: ${resp.udt_name}  table name: ${resp.table_name} column name: ${resp.column_name}`
+                                `Unknown ${resp.data_type} column type: ${resp.udt_name} table name: ${resp.table_name} column name: ${resp.column_name}`
                             );
                         } else {
                             TomgUtils.LogError(
-                                `Unknown column type: ${resp.data_type}  table name: ${resp.table_name} column name: ${resp.column_name}`
+                                `Unknown column type: ${resp.data_type} table name: ${resp.table_name} column name: ${resp.column_name}`
                             );
                         }
                         return;
                     }
+
                     const columnType = columnTypes.sqlType;
                     let tscType = columnTypes.tsType;
                     if (columnTypes.isArray) options.array = true;
@@ -152,16 +161,15 @@ export default class PostgresDriver extends AbstractDriver {
                                 ? resp.character_maximum_length
                                 : undefined;
                     }
-                    if (columnType && tscType) {
-                        ent.columns.push({
-                            generated,
-                            type: columnType,
-                            default: defaultValue,
-                            options,
-                            tscName,
-                            tscType
-                        });
-                    }
+
+                    ent.columns.push({
+                        generated,
+                        type: columnType,
+                        default: defaultValue,
+                        options,
+                        tscName,
+                        tscType
+                    });
                 });
         });
         return entities;
@@ -173,17 +181,16 @@ export default class PostgresDriver extends AbstractDriver {
         enumValues: string | null
     ) {
         let ret: {
-            tsType?: Column["tscType"];
-            sqlType: string | null;
+            tsType: Column["tscType"];
+            sqlType: string;
             isArray: boolean;
             enumValues: string[];
         } = {
-            tsType: undefined,
-            sqlType: null,
+            tsType: "",
+            sqlType: dataType,
             isArray: false,
             enumValues: []
         };
-        ret.sqlType = dataType;
         switch (dataType) {
             case "int2":
                 ret.tsType = "number";
@@ -389,16 +396,12 @@ export default class PostgresDriver extends AbstractDriver {
                                 .join('" | "')}"` as never) as string;
                             ret.sqlType = "enum";
                             ret.enumValues = enumValues.split(",");
-                        } else {
-                            ret.tsType = undefined;
-                            ret.sqlType = null;
                         }
                         break;
                 }
                 break;
             default:
-                ret.tsType = undefined;
-                ret.sqlType = null;
+                ret.tsType = "NonNullable<unknown>";
                 break;
         }
         return ret;
@@ -594,7 +597,7 @@ export default class PostgresDriver extends AbstractDriver {
             port: connectionOptons.port,
             ssl: connectionOptons.ssl,
             // eslint-disable-next-line @typescript-eslint/camelcase
-            statement_timeout: connectionOptons.timeout,
+            statement_timeout: 60 * 60 * 1000,
             user: connectionOptons.user
         });
 

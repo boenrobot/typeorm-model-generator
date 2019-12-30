@@ -69,7 +69,8 @@ export default abstract class AbstractDriver {
 
     public abstract GetAllTablesQuery: (
         schema: string,
-        dbNames: string
+        dbNames: string,
+        tableNames: string[]
     ) => Promise<
         {
             TABLE_SCHEMA: string;
@@ -188,7 +189,8 @@ export default abstract class AbstractDriver {
         );
         dbModel = await this.GetAllTables(
             sqlEscapedSchema,
-            connectionOptions.databaseName
+            connectionOptions.databaseName,
+            connectionOptions.skipTables
         );
         await this.GetCoulmnsFromEntity(
             dbModel,
@@ -209,20 +211,6 @@ export default abstract class AbstractDriver {
         );
         await this.DisconnectFromServer();
         dbModel = AbstractDriver.FindManyToManyRelations(dbModel);
-        dbModel = AbstractDriver.FindFileImports(dbModel);
-        return dbModel;
-    }
-
-    private static FindFileImports(dbModel: Entity[]) {
-        dbModel.forEach(entity => {
-            entity.relations.forEach(relation => {
-                if (
-                    !entity.fileImports.some(v => v === relation.relatedTable)
-                ) {
-                    entity.fileImports.push(relation.relatedTable);
-                }
-            });
-        });
         return dbModel;
     }
 
@@ -230,9 +218,14 @@ export default abstract class AbstractDriver {
 
     public async GetAllTables(
         schema: string,
-        dbNames: string
+        dbNames: string,
+        tableNames: string[]
     ): Promise<Entity[]> {
-        const response = await this.GetAllTablesQuery(schema, dbNames);
+        const response = await this.GetAllTablesQuery(
+            schema,
+            dbNames,
+            tableNames
+        );
         const ret: Entity[] = [] as Entity[];
         response.forEach(val => {
             ret.push({
@@ -387,11 +380,20 @@ export default abstract class AbstractDriver {
                     ownerColumns[0].tscName,
                     ownerEntity
                 );
+
+                let fieldType = "";
+                if (isOneToMany) {
+                    fieldType = `${ownerColumns[0].tscType}[]`;
+                } else {
+                    fieldType = ownerColumns[0].tscType;
+                    if (ownerColumns[0].options.nullable) {
+                        fieldType += " | null";
+                    }
+                }
+
                 ownerEntity.relationIds.push({
                     fieldName: relationIdFieldName,
-                    fieldType: isOneToMany
-                        ? `${ownerColumns[0].tscType}[]`
-                        : ownerColumns[0].tscType,
+                    fieldType,
                     relationOptions: ownerRelation.relationOptions,
                     relationField: ownerRelation.fieldName
                 });

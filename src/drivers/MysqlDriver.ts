@@ -26,7 +26,15 @@ export default class MysqlDriver extends AbstractDriver {
 
     private Connection: MYSQL.Connection;
 
-    public GetAllTablesQuery = async (schema: string, dbNames: string) => {
+    public GetAllTablesQuery = async (
+        schema: string,
+        dbNames: string,
+        tableNames: string[]
+    ) => {
+        const tableCondition =
+            tableNames.length > 0
+                ? ` AND NOT TABLE_NAME IN ('${tableNames.join("','")}')`
+                : "";
         const response = this.ExecQuery<{
             TABLE_SCHEMA: string;
             TABLE_NAME: string;
@@ -36,7 +44,7 @@ export default class MysqlDriver extends AbstractDriver {
             WHERE table_type='BASE TABLE'
             AND table_schema IN (${MysqlDriver.escapeCommaSeparatedList(
                 dbNames
-            )})`);
+            )}) ${tableCondition}`);
         return response;
     };
 
@@ -75,7 +83,8 @@ export default class MysqlDriver extends AbstractDriver {
                     };
                     const generated = resp.IsIdentity === 1 ? true : undefined;
                     const defaultValue = MysqlDriver.ReturnDefaultValueFunction(
-                        resp.COLUMN_DEFAULT
+                        resp.COLUMN_DEFAULT,
+                        resp.DATA_TYPE
                     );
                     let columnType = resp.DATA_TYPE;
                     if (resp.IS_NULLABLE === "YES") options.nullable = true;
@@ -178,6 +187,20 @@ export default class MysqlDriver extends AbstractDriver {
                                 .replace(/'/gi, "")
                                 .split(",");
                             break;
+                        case "set":
+                            tscType = `(${resp.COLUMN_TYPE.substring(
+                                4,
+                                resp.COLUMN_TYPE.length - 1
+                            )
+                                .replace(/'/gi, '"')
+                                .replace(/","/gi, '" | "')})[]`;
+                            options.enum = resp.COLUMN_TYPE.substring(
+                                4,
+                                resp.COLUMN_TYPE.length - 1
+                            )
+                                .replace(/'/gi, "")
+                                .split(",");
+                            break;
                         case "json":
                             tscType = "object";
                             break;
@@ -214,6 +237,7 @@ export default class MysqlDriver extends AbstractDriver {
                             tscType = "string";
                             break;
                         default:
+                            tscType = "NonNullable<unknown>";
                             TomgUtils.LogError(
                                 `Unknown column type: ${resp.DATA_TYPE}  table name: ${resp.TABLE_NAME} column name: ${resp.COLUMN_NAME}`
                             );
@@ -250,16 +274,14 @@ export default class MysqlDriver extends AbstractDriver {
                                 : undefined;
                     }
 
-                    if (columnType) {
-                        ent.columns.push({
-                            generated,
-                            type: columnType,
-                            default: defaultValue,
-                            options,
-                            tscName,
-                            tscType
-                        });
-                    }
+                    ent.columns.push({
+                        generated,
+                        type: columnType,
+                        default: defaultValue,
+                        options,
+                        tscName,
+                        tscType
+                    });
                 });
         });
         return entities;
@@ -421,7 +443,7 @@ export default class MysqlDriver extends AbstractDriver {
                 ssl: {
                     rejectUnauthorized: false
                 },
-                timeout: connectionOptons.timeout,
+                timeout: 60 * 60 * 1000,
                 user: connectionOptons.user
             };
         } else {
@@ -430,7 +452,7 @@ export default class MysqlDriver extends AbstractDriver {
                 host: connectionOptons.host,
                 password: connectionOptons.password,
                 port: connectionOptons.port,
-                timeout: connectionOptons.timeout,
+                timeout: 60 * 60 * 1000,
                 user: connectionOptons.user
             };
         }
@@ -488,7 +510,8 @@ export default class MysqlDriver extends AbstractDriver {
     }
 
     private static ReturnDefaultValueFunction(
-        defVal: string | undefined
+        defVal: string | undefined,
+        dataType: string
     ): string | undefined {
         let defaultValue = defVal;
         if (!defaultValue || defaultValue === "NULL") {
@@ -502,6 +525,9 @@ export default class MysqlDriver extends AbstractDriver {
             defaultValue.startsWith(`'`)
         ) {
             return `() => "${defaultValue}"`;
+        }
+        if (dataType === "set") {
+            return `() => ['${defaultValue.split(",").join("','")}']`;
         }
         return `() => "'${defaultValue}'"`;
     }

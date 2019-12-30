@@ -2,26 +2,96 @@ import { DataTypeDefaults } from "typeorm/driver/types/DataTypeDefaults";
 import { DefaultNamingStrategy } from "typeorm/naming-strategy/DefaultNamingStrategy";
 import { Entity } from "./models/Entity";
 import IGenerationOptions from "./IGenerationOptions";
-import AbstractNamingStrategy from "./AbstractNamingStrategy";
-import NamingStrategy from "./NamingStrategy";
+import * as NamingStrategy from "./NamingStrategy";
 import * as TomgUtils from "./Utils";
+import { Relation } from "./models/Relation";
+import { RelationId } from "./models/RelationId";
+import { Column } from "./models/Column";
+
+type NamingStrategy = {
+    enablePluralization: (value: boolean) => void;
+    relationIdName: (
+        relationId: RelationId,
+        relation: Relation,
+        owner: Entity
+    ) => string;
+    relationName: (relation: Relation, owner: Entity) => string;
+    columnName: (columnName: string, column?: Column) => string;
+    entityName: (entityName: string, entity?: Entity) => string;
+};
 
 export default function modelCustomizationPhase(
     dbModel: Entity[],
     generationOptions: IGenerationOptions,
     defaultValues: DataTypeDefaults
 ): Entity[] {
-    let namingStrategy: AbstractNamingStrategy;
+    const namingStrategy: NamingStrategy = {
+        enablePluralization: NamingStrategy.enablePluralization,
+        columnName: NamingStrategy.columnName,
+        entityName: NamingStrategy.entityName,
+        relationIdName: NamingStrategy.relationIdName,
+        relationName: NamingStrategy.relationName
+    };
     if (
         generationOptions.customNamingStrategyPath &&
         generationOptions.customNamingStrategyPath !== ""
     ) {
-        // eslint-disable-next-line global-require, import/no-dynamic-require, @typescript-eslint/no-var-requires
-        const req = require(generationOptions.customNamingStrategyPath);
-        namingStrategy = new req.NamingStrategy();
-    } else {
-        namingStrategy = new NamingStrategy();
+        // TODO: change form of logging
+        const req = TomgUtils.requireLocalFile(
+            generationOptions.customNamingStrategyPath
+        ) as Partial<NamingStrategy>;
+        if (req.columnName) {
+            console.log(
+                `[${new Date().toLocaleTimeString()}] Using custom naming strategy for column names.`
+            );
+            namingStrategy.columnName = req.columnName;
+        } else {
+            console.log(
+                `[${new Date().toLocaleTimeString()}] Using standard naming strategy for column names.`
+            );
+        }
+        if (req.entityName) {
+            console.log(
+                `[${new Date().toLocaleTimeString()}] Using custom naming strategy for entity names.`
+            );
+            namingStrategy.entityName = req.entityName;
+        } else {
+            console.log(
+                `[${new Date().toLocaleTimeString()}] Using standard naming strategy for entity names.`
+            );
+        }
+        if (req.relationIdName) {
+            console.log(
+                `[${new Date().toLocaleTimeString()}] Using custom naming strategy for relationId field names.`
+            );
+            namingStrategy.relationIdName = req.relationIdName;
+        } else {
+            console.log(
+                `[${new Date().toLocaleTimeString()}] Using standard naming strategy for relationId field names.`
+            );
+        }
+        if (req.relationName) {
+            console.log(
+                `[${new Date().toLocaleTimeString()}] Using custom naming strategy for relation field names.`
+            );
+            namingStrategy.relationName = req.relationName;
+        } else {
+            console.log(
+                `[${new Date().toLocaleTimeString()}] Using standard naming strategy for relation field names.`
+            );
+        }
+        if (req.enablePluralization) {
+            console.log(
+                `[${new Date().toLocaleTimeString()}] Using custom pluralization method for OneToMany, ManyToMany relation field names.`
+            );
+            namingStrategy.enablePluralization = req.enablePluralization;
+        } else {
+            console.log(
+                `[${new Date().toLocaleTimeString()}] Using custom pluralization method for OneToMany, ManyToMany relation field names.`
+            );
+        }
     }
+    namingStrategy.enablePluralization(generationOptions.pluralizeNames);
     let retVal = removeIndicesGeneratedByTypeorm(dbModel);
     retVal = removeColumnsInRelation(dbModel);
     retVal = applyNamingStrategy(namingStrategy, dbModel);
@@ -128,10 +198,26 @@ function removeColumnDefaultProperties(
     });
     return dbModel;
 }
+
+function findFileImports(dbModel: Entity[]) {
+    dbModel.forEach(entity => {
+        entity.relations.forEach(relation => {
+            if (
+                relation.relatedTable !== entity.tscName &&
+                !entity.fileImports.some(v => v === relation.relatedTable)
+            ) {
+                entity.fileImports.push(relation.relatedTable);
+            }
+        });
+    });
+    return dbModel;
+}
+
 function addImportsAndGenerationOptions(
     dbModel: Entity[],
     generationOptions: IGenerationOptions
 ): Entity[] {
+    dbModel = findFileImports(dbModel);
     dbModel.forEach(entity => {
         entity.relations.forEach(relation => {
             if (generationOptions.lazy) {
@@ -156,7 +242,7 @@ function addImportsAndGenerationOptions(
 }
 
 function applyNamingStrategy(
-    namingStrategy: AbstractNamingStrategy,
+    namingStrategy: NamingStrategy,
     dbModel: Entity[]
 ): Entity[] {
     let retVal = changeRelationNames(dbModel);
