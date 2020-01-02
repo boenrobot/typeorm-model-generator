@@ -38,12 +38,14 @@ export default class MssqlDriver extends AbstractDriver {
             TABLE_SCHEMA: string;
             TABLE_NAME: string;
             DB_NAME: string;
-        }[] = (await request.query(
-            `SELECT TABLE_SCHEMA,TABLE_NAME, table_catalog as "DB_NAME" FROM INFORMATION_SCHEMA.TABLES
+        }[] = (
+            await request.query(
+                `SELECT TABLE_SCHEMA,TABLE_NAME, table_catalog as "DB_NAME" FROM INFORMATION_SCHEMA.TABLES
 WHERE TABLE_TYPE='BASE TABLE' and TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG in (${MssqlDriver.escapeCommaSeparatedList(
-                dbNames
-            )}) ${tableCondition}`
-        )).recordset;
+                    dbNames
+                )}) ${tableCondition}`
+            )
+        ).recordset;
         return response;
     };
 
@@ -64,7 +66,8 @@ WHERE TABLE_TYPE='BASE TABLE' and TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG 
             NUMERIC_SCALE: number;
             IsIdentity: number;
             IsUnique: number;
-        }[] = (await request.query(`SELECT TABLE_NAME,COLUMN_NAME,COLUMN_DEFAULT,IS_NULLABLE,
+        }[] = (
+            await request.query(`SELECT TABLE_NAME,COLUMN_NAME,COLUMN_DEFAULT,IS_NULLABLE,
         DATA_TYPE,CHARACTER_MAXIMUM_LENGTH,NUMERIC_PRECISION,NUMERIC_SCALE,
         COLUMNPROPERTY(object_id(TABLE_NAME), COLUMN_NAME, 'IsIdentity') IsIdentity,
         (SELECT count(*)
@@ -78,9 +81,10 @@ WHERE TABLE_TYPE='BASE TABLE' and TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG 
              and tc.TABLE_SCHEMA=c.TABLE_SCHEMA) IsUnique
         FROM INFORMATION_SCHEMA.COLUMNS c
         where TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG in (${MssqlDriver.escapeCommaSeparatedList(
-            dbNames
-        )})
-             order by ordinal_position`)).recordset;
+                dbNames
+            )})
+             order by ordinal_position`)
+        ).recordset;
         entities.forEach(ent => {
             response
                 .filter(filterVal => {
@@ -262,7 +266,8 @@ WHERE TABLE_TYPE='BASE TABLE' and TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG 
                     ColumnName: string;
                     is_unique: boolean;
                     is_primary_key: boolean;
-                }[] = (await request.query(`SELECT
+                }[] = (
+                    await request.query(`SELECT
              TableName = t.name,
              IndexName = ind.name,
              ColumnName = col.name,
@@ -281,7 +286,8 @@ WHERE TABLE_TYPE='BASE TABLE' and TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG 
         WHERE
              t.is_ms_shipped = 0 and s.name in (${schema})
         ORDER BY
-             t.name, ind.name, ind.index_id, ic.key_ordinal;`)).recordset;
+             t.name, ind.name, ind.index_id, ic.key_ordinal;`)
+                ).recordset;
                 response.push(...resp);
             })
         );
@@ -341,7 +347,8 @@ WHERE TABLE_TYPE='BASE TABLE' and TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG 
                     onDelete: "RESTRICT" | "CASCADE" | "SET_NULL" | "NO_ACTION";
                     onUpdate: "RESTRICT" | "CASCADE" | "SET_NULL" | "NO_ACTION";
                     objectId: number;
-                }[] = (await request.query(`select
+                }[] = (
+                    await request.query(`select
             parentTable.name as TableWithForeignKey,
             fkc.constraint_column_id as FK_PartNo,
              parentColumn.name as ForeignKeyColumn,
@@ -367,7 +374,8 @@ WHERE TABLE_TYPE='BASE TABLE' and TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG 
         where
             fk.is_disabled=0 and fk.is_ms_shipped=0 and parentSchema.name in (${schema})
         order by
-            TableWithForeignKey, FK_PartNo`)).recordset;
+            TableWithForeignKey, FK_PartNo`)
+                ).recordset;
                 response.push(...resp);
             })
         );

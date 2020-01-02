@@ -307,22 +307,24 @@ function checkYargsParameters(options: options): options {
 
 async function useInquirer(options: options): Promise<options> {
     const oldDatabaseType = options.connectionOptions.databaseType;
-    options.connectionOptions.databaseType = (await inquirer.prompt([
-        {
-            choices: [
-                "mssql",
-                "postgres",
-                "mysql",
-                "mariadb",
-                "oracle",
-                "sqlite"
-            ],
-            default: options.connectionOptions.databaseType,
-            message: "Choose database engine",
-            name: "engine",
-            type: "list"
-        }
-    ])).engine;
+    options.connectionOptions.databaseType = (
+        await inquirer.prompt([
+            {
+                choices: [
+                    "mssql",
+                    "postgres",
+                    "mysql",
+                    "mariadb",
+                    "oracle",
+                    "sqlite"
+                ],
+                default: options.connectionOptions.databaseType,
+                message: "Choose database engine",
+                name: "engine",
+                type: "list"
+            }
+        ])
+    ).engine;
     const driver = createDriver(options.connectionOptions.databaseType);
     if (options.connectionOptions.databaseType !== oldDatabaseType) {
         options.connectionOptions.port = driver.standardPort;
@@ -376,15 +378,17 @@ async function useInquirer(options: options): Promise<options> {
             options.connectionOptions.databaseType === "mssql" ||
             options.connectionOptions.databaseType === "postgres"
         ) {
-            options.connectionOptions.schemaName = (await inquirer.prompt([
-                {
-                    default: options.connectionOptions.schemaName,
-                    message:
-                        "Database schema: (You can pass multiple values separated by comma)",
-                    name: "schema",
-                    type: "input"
-                }
-            ])).schema;
+            options.connectionOptions.schemaName = (
+                await inquirer.prompt([
+                    {
+                        default: options.connectionOptions.schemaName,
+                        message:
+                            "Database schema: (You can pass multiple values separated by comma)",
+                        name: "schema",
+                        type: "input"
+                    }
+                ])
+            ).schema;
         }
         options.connectionOptions.port = parseInt(answ.port, 10);
         options.connectionOptions.host = answ.host;
@@ -393,28 +397,32 @@ async function useInquirer(options: options): Promise<options> {
         options.connectionOptions.databaseName = answ.dbName;
         options.connectionOptions.ssl = answ.ssl;
     } else {
-        options.connectionOptions.databaseName = (await inquirer.prompt([
-            {
-                default: options.connectionOptions.databaseName,
-                message: "Path to database file:",
-                name: "dbName",
-                type: "input"
-            }
-        ])).dbName;
+        options.connectionOptions.databaseName = (
+            await inquirer.prompt([
+                {
+                    default: options.connectionOptions.databaseName,
+                    message: "Path to database file:",
+                    name: "dbName",
+                    type: "input"
+                }
+            ])
+        ).dbName;
     }
 
-    const ignoreSpecyficTables = (await inquirer.prompt([
-        {
-            default:
-                options.connectionOptions.skipTables.length === 0
-                    ? "All of them"
-                    : "Ignore specific tables",
-            message: "Generate schema for tables:",
-            choices: ["All of them", "Ignore specific tables"],
-            name: "specyficTables",
-            type: "list"
-        }
-    ])).specyficTables;
+    const ignoreSpecyficTables = (
+        await inquirer.prompt([
+            {
+                default:
+                    options.connectionOptions.skipTables.length === 0
+                        ? "All of them"
+                        : "Ignore specific tables",
+                message: "Generate schema for tables:",
+                choices: ["All of them", "Ignore specific tables"],
+                name: "specyficTables",
+                type: "list"
+            }
+        ])
+    ).specyficTables;
     if (ignoreSpecyficTables === "Ignore specific tables") {
         const { tableNames } = await inquirer.prompt({
             default: options.connectionOptions.skipTables.join(","),
@@ -427,14 +435,16 @@ async function useInquirer(options: options): Promise<options> {
         options.connectionOptions.skipTables = [];
     }
 
-    options.generationOptions.resultsPath = (await inquirer.prompt([
-        {
-            default: options.generationOptions.resultsPath,
-            message: "Path where generated models should be stored:",
-            name: "output",
-            type: "input"
-        }
-    ])).output;
+    options.generationOptions.resultsPath = (
+        await inquirer.prompt([
+            {
+                default: options.generationOptions.resultsPath,
+                message: "Path where generated models should be stored:",
+                name: "output",
+                type: "input"
+            }
+        ])
+    ).output;
     const { customizeGeneration } = await inquirer.prompt([
         {
             default: false,
@@ -445,100 +455,112 @@ async function useInquirer(options: options): Promise<options> {
     ]);
     if (customizeGeneration) {
         const defaultGenerationOptions = getDefaultGenerationOptions();
-        const customizations: string[] = (await inquirer.prompt([
-            {
-                choices: [
-                    {
-                        checked: !options.generationOptions.noConfigs,
-                        name: "Generate config files",
-                        value: "config"
-                    },
-                    {
-                        name: "Generate lazy relations",
-                        value: "lazy",
-                        checked: options.generationOptions.lazy
-                    },
-                    {
-                        name: "Use ActiveRecord syntax for generated models",
-                        value: "activeRecord",
-                        checked: options.generationOptions.activeRecord
-                    },
-                    {
-                        name: "Use custom naming strategy",
-                        value: "namingStrategy",
-                        checked: !!options.generationOptions
-                            .customNamingStrategyPath
-                    },
-                    {
-                        name: "Generate RelationId fields",
-                        value: "relationId",
-                        checked: options.generationOptions.relationIds
-                    },
-                    {
-                        name: "Omits schema identifier in generated entities",
-                        value: "skipSchema",
-                        checked: options.generationOptions.skipSchema
-                    },
-                    {
-                        name:
-                            "Generate constructor allowing partial initialization",
-                        value: "constructor",
-                        checked: options.generationOptions.generateConstructor
-                    },
-                    {
-                        name: "Use specific naming convention",
-                        value: "namingConvention",
-                        checked:
-                            options.generationOptions.convertCaseEntity !==
-                                defaultGenerationOptions.convertCaseEntity ||
-                            options.generationOptions.convertCaseProperty !==
-                                defaultGenerationOptions.convertCaseProperty ||
-                            options.generationOptions.convertCaseFile !==
-                                defaultGenerationOptions.convertCaseFile
-                    },
-                    {
-                        name: "Pluralize OneToMany, ManyToMany relation names",
-                        value: "pluralize",
-                        checked: options.generationOptions.pluralizeNames
-                    },
-                    {
-                        name: "Generate index file",
-                        value: "index",
-                        checked: options.generationOptions.indexFile
-                    },
-                    {
-                        name: "Prefer default exports",
-                        value: "defaultExport",
-                        checked:
-                            options.generationOptions.exportType === "default"
-                    }
-                ],
-                message: "Available customizations",
-                name: "selected",
-                type: "checkbox"
-            }
-        ])).selected;
+        const customizations: string[] = (
+            await inquirer.prompt([
+                {
+                    choices: [
+                        {
+                            checked: !options.generationOptions.noConfigs,
+                            name: "Generate config files",
+                            value: "config"
+                        },
+                        {
+                            name: "Generate lazy relations",
+                            value: "lazy",
+                            checked: options.generationOptions.lazy
+                        },
+                        {
+                            name:
+                                "Use ActiveRecord syntax for generated models",
+                            value: "activeRecord",
+                            checked: options.generationOptions.activeRecord
+                        },
+                        {
+                            name: "Use custom naming strategy",
+                            value: "namingStrategy",
+                            checked: !!options.generationOptions
+                                .customNamingStrategyPath
+                        },
+                        {
+                            name: "Generate RelationId fields",
+                            value: "relationId",
+                            checked: options.generationOptions.relationIds
+                        },
+                        {
+                            name:
+                                "Omits schema identifier in generated entities",
+                            value: "skipSchema",
+                            checked: options.generationOptions.skipSchema
+                        },
+                        {
+                            name:
+                                "Generate constructor allowing partial initialization",
+                            value: "constructor",
+                            checked:
+                                options.generationOptions.generateConstructor
+                        },
+                        {
+                            name: "Use specific naming convention",
+                            value: "namingConvention",
+                            checked:
+                                options.generationOptions.convertCaseEntity !==
+                                    defaultGenerationOptions.convertCaseEntity ||
+                                options.generationOptions
+                                    .convertCaseProperty !==
+                                    defaultGenerationOptions.convertCaseProperty ||
+                                options.generationOptions.convertCaseFile !==
+                                    defaultGenerationOptions.convertCaseFile
+                        },
+                        {
+                            name:
+                                "Pluralize OneToMany, ManyToMany relation names",
+                            value: "pluralize",
+                            checked: options.generationOptions.pluralizeNames
+                        },
+                        {
+                            name: "Generate index file",
+                            value: "index",
+                            checked: options.generationOptions.indexFile
+                        },
+                        {
+                            name: "Prefer default exports",
+                            value: "defaultExport",
+                            checked:
+                                options.generationOptions.exportType ===
+                                "default"
+                        }
+                    ],
+                    message: "Available customizations",
+                    name: "selected",
+                    type: "checkbox"
+                }
+            ])
+        ).selected;
 
-        options.generationOptions.propertyVisibility = (await inquirer.prompt([
-            {
-                choices: ["public", "protected", "private", "none"],
-                message:
-                    "Defines which visibility should have the generated property",
-                name: "propertyVisibility",
-                default: options.generationOptions.propertyVisibility,
-                type: "list"
-            }
-        ])).propertyVisibility;
+        options.generationOptions.propertyVisibility = (
+            await inquirer.prompt([
+                {
+                    choices: ["public", "protected", "private", "none"],
+                    message:
+                        "Defines which visibility should have the generated property",
+                    name: "propertyVisibility",
+                    default: options.generationOptions.propertyVisibility,
+                    type: "list"
+                }
+            ])
+        ).propertyVisibility;
 
-        options.generationOptions.strictMode = (await inquirer.prompt([
-            {
-                choices: ["none", "?", "!"],
-                message: "Mark fields as optional(?) or non-null(!)",
-                name: "strictMode",
-                default: options.generationOptions.strictMode,
-                type: "list"
-            }
-        ])).strictMode;
+        options.generationOptions.strictMode = (
+            await inquirer.prompt([
+                {
+                    choices: ["none", "?", "!"],
+                    message: "Mark fields as optional(?) or non-null(!)",
+                    name: "strictMode",
+                    default: options.generationOptions.strictMode,
+                    type: "list"
+                }
+            ])
+        ).strictMode;
 
         options.generationOptions.noConfigs = !customizations.includes(
             "config"
@@ -567,21 +589,24 @@ async function useInquirer(options: options): Promise<options> {
             : "named";
 
         if (customizations.includes("namingStrategy")) {
-            const namingStrategyPath = (await inquirer.prompt([
-                {
-                    default: options.generationOptions.customNamingStrategyPath,
-                    message: "Path to custom naming strategy file:",
-                    name: "namingStrategy",
-                    type: "input",
-                    validate(value) {
-                        const valid = value === "" || fs.existsSync(value);
-                        return (
-                            valid ||
-                            "Please enter a a valid path to custom naming strategy file"
-                        );
+            const namingStrategyPath = (
+                await inquirer.prompt([
+                    {
+                        default:
+                            options.generationOptions.customNamingStrategyPath,
+                        message: "Path to custom naming strategy file:",
+                        name: "namingStrategy",
+                        type: "input",
+                        validate(value) {
+                            const valid = value === "" || fs.existsSync(value);
+                            return (
+                                valid ||
+                                "Please enter a a valid path to custom naming strategy file"
+                            );
+                        }
                     }
-                }
-            ])).namingStrategy;
+                ])
+            ).namingStrategy;
 
             if (namingStrategyPath && namingStrategyPath !== "") {
                 options.generationOptions.customNamingStrategyPath = namingStrategyPath;
