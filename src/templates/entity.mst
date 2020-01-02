@@ -19,11 +19,14 @@ import {{localImport (toEntityName .)}} from './{{toFileName .}}'
 {{printPropertyVisibility}}{{toPropertyName fieldName}}{{strictMode}}:{{toRelation (toEntityName relatedTable) relationType relationOptions}};
 
 {{/inline}}
-{{#*inline "RelationId"}}
+{{#*inline "RelationId"}}{{#unless relationOptions.lazy}}{{!
+  TypeORM doesn't support relationId from lazy relations right now.
+  However, once it does, the above check and this comment can simply be removed to add support in the generator.
+}}
   @RelationId({{#if relationOptions.lazy}}async {{/if}}({{toPropertyName entityName}}:{{toEntityName entityName}})=>{{toPropertyName entityName}}.{{toPropertyName relationField}})
 {{printPropertyVisibility}}{{toPropertyName fieldName}}{{strictMode}}:{{fieldType}};
 
-{{/inline}}
+{{/unless}}{{/inline}}
 {{#*inline "Constructor"}}
 {{printPropertyVisibility}}constructor(init?: Partial<{{toEntityName entityName}}>) {
     {{#activeRecord}}super();
