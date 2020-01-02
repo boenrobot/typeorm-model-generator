@@ -24,8 +24,16 @@ export default class MssqlDriver extends AbstractDriver {
 
     private Connection: MSSQL.ConnectionPool;
 
-    public GetAllTablesQuery = async (schema: string, dbNames: string) => {
+    public GetAllTablesQuery = async (
+        schema: string,
+        dbNames: string,
+        tableNames: string[]
+    ) => {
         const request = new MSSQL.Request(this.Connection);
+        const tableCondition =
+            tableNames.length > 0
+                ? ` AND NOT TABLE_NAME IN ('${tableNames.join("','")}')`
+                : "";
         const response: {
             TABLE_SCHEMA: string;
             TABLE_NAME: string;
@@ -34,7 +42,7 @@ export default class MssqlDriver extends AbstractDriver {
             `SELECT TABLE_SCHEMA,TABLE_NAME, table_catalog as "DB_NAME" FROM INFORMATION_SCHEMA.TABLES
 WHERE TABLE_TYPE='BASE TABLE' and TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG in (${MssqlDriver.escapeCommaSeparatedList(
                 dbNames
-            )})`
+            )}) ${tableCondition}`
         )).recordset;
         return response;
     };
@@ -192,6 +200,7 @@ WHERE TABLE_TYPE='BASE TABLE' and TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG 
                             tscType = "string";
                             break;
                         default:
+                            tscType = "NonNullable<unknown>";
                             TomgUtils.LogError(
                                 `Unknown column type: ${resp.DATA_TYPE}  table name: ${resp.TABLE_NAME} column name: ${resp.COLUMN_NAME}`
                             );
@@ -218,17 +227,14 @@ WHERE TABLE_TYPE='BASE TABLE' and TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG 
                                 ? resp.CHARACTER_MAXIMUM_LENGTH
                                 : undefined;
                     }
-
-                    if (columnType) {
-                        ent.columns.push({
-                            generated,
-                            type: columnType,
-                            default: defaultValue,
-                            options,
-                            tscName,
-                            tscType
-                        });
-                    }
+                    ent.columns.push({
+                        generated,
+                        type: columnType,
+                        default: defaultValue,
+                        options,
+                        tscName,
+                        tscType
+                    });
                 });
         });
         return entities;
@@ -440,7 +446,7 @@ WHERE TABLE_TYPE='BASE TABLE' and TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG 
             },
             password: connectionOptons.password,
             port: connectionOptons.port,
-            requestTimeout: connectionOptons.timeout,
+            requestTimeout: 60 * 60 * 1000,
             server: connectionOptons.host,
             user: connectionOptons.user
         };
