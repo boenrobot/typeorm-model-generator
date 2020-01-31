@@ -427,8 +427,8 @@ export default class OracleDriver extends AbstractDriver {
             defaultVal = defaultVal.slice(0, -1);
         }
         if (defaultVal.startsWith(`'`)) {
-            return `() => "${defaultVal}"`;
+            return `(): string => "${defaultVal}"`;
         }
-        return `() => "${defaultVal}"`;
+        return `(): string => "${defaultVal}"`;
     }
 }

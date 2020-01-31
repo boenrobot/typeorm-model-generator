@@ -510,8 +510,8 @@ WHERE TABLE_TYPE='BASE TABLE' and TABLE_SCHEMA in (${schema}) AND TABLE_CATALOG 
             defaultValue = defaultValue.slice(1, -1);
         }
         if (defaultValue.startsWith(`'`)) {
-            return `() => "${defaultValue}"`;
+            return `(): string => "${defaultValue}"`;
         }
-        return `() => "${defaultValue}"`;
+        return `(): string => "${defaultValue}"`;
     }
 }
